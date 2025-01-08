@@ -90,7 +90,7 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const duration = parseInt(urlParams.get('duration')) || 60;
+        const duration = parseInt(urlParams.get('duration')) || 60; // Default to 60 seconds
         const resolution = urlParams.get('resolution') || '720';
 
         let mediaRecorder;
