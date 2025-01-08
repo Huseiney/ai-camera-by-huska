@@ -15,133 +15,138 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
             overflow: hidden;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            animation: fadeInDown 1s ease;
+            font-size: 2rem;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .video-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
         }
 
         video {
-            margin: 20px 0;
+            width: 100%;
+            max-width: 600px;
             border: 4px solid white;
             border-radius: 8px;
-            max-width: 90%;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-            animation: fadeInUp 1.5s ease;
         }
 
-        button {
-            padding: 12px 24px;
-            margin: 10px;
-            background: #ff5f6d;
-            border: none;
-            border-radius: 5px;
-            color: white;
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .dropdown {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        label {
             font-size: 1rem;
-            cursor: pointer;
-            transition: transform 0.3s ease, background 0.3s ease;
-            animation: fadeIn 1s ease;
-        }
-
-        button:hover {
-            background: #ffc371;
-            transform: scale(1.1);
+            margin-bottom: 5px;
         }
 
         select {
+            width: 100%;
             padding: 10px;
-            margin: 10px;
             font-size: 1rem;
             border-radius: 5px;
             border: none;
             background: #4e54c8;
             color: white;
             cursor: pointer;
-            animation: fadeIn 1s ease;
         }
 
         select:hover {
             background: #8f94fb;
         }
 
-        .dropdown {
-            margin: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            animation: slideIn 1s ease;
+        button {
+            padding: 12px 24px;
+            background: #ff5f6d;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #ffc371;
         }
 
         #countdown {
             font-size: 1.2rem;
-            margin: 10px 0;
             font-weight: bold;
-            animation: fadeIn 2s ease;
+            margin-top: 10px;
         }
 
         .footer {
-            position: absolute;
-            bottom: 10px;
+            margin-top: auto;
             font-size: 0.8rem;
             color: #ccc;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-50px); }
-            to { opacity: 1; transform: translateX(0); }
         }
     </style>
 </head>
 <body>
     <h1>AI Video Recorder</h1>
-    <video id="livePreview" autoplay muted></video>
-    <video id="videoPlayer" controls></video>
-    <div id="countdown">Recording time left: 60 seconds</div>
+    <div class="container">
+        <div class="video-container">
+            <video id="livePreview" autoplay muted></video>
+            <video id="videoPlayer" controls></video>
+        </div>
 
-    <div class="dropdown">
-        <label for="duration">Recording Duration:</label>
-        <select id="duration">
-            <option value="30">30 seconds</option>
-            <option value="60" selected>60 seconds</option>
-            <option value="120">120 seconds</option>
-        </select>
+        <div class="controls">
+            <div id="countdown">Recording time left: 60 seconds</div>
 
-        <label for="resolution">Resolution:</label>
-        <select id="resolution">
-            <option value="720">720p</option>
-            <option value="1080">1080p</option>
-        </select>
+            <div class="dropdown">
+                <label for="duration">Recording Duration:</label>
+                <select id="duration">
+                    <option value="30">30 seconds</option>
+                    <option value="60" selected>60 seconds</option>
+                    <option value="120">120 seconds</option>
+                </select>
+
+                <label for="resolution">Resolution:</label>
+                <select id="resolution">
+                    <option value="720">720p</option>
+                    <option value="1080">1080p</option>
+                </select>
+            </div>
+
+            <button id="toggleCamera">Switch to Rear Camera</button>
+        </div>
     </div>
 
-    <button id="toggleCamera">Switch to Rear Camera</button>
-    <button id="pauseResume">Pause</button>
-    <button id="downloadVideo">Download Video</button>
-    <p>Recording will start automatically. Please allow camera and microphone access.</p>
     <div class="footer">© 2025 AI Video Recorder</div>
 
     <script>
@@ -150,7 +155,6 @@
         let stream;
         let chunks = [];
         let countdownInterval;
-        let isPaused = false;
 
         async function startStream() {
             try {
@@ -241,26 +245,6 @@
                 stream.getTracks().forEach((track) => track.stop());
             }
             startStream();
-        });
-
-        document.getElementById('pauseResume').addEventListener('click', () => {
-            if (isPaused) {
-                mediaRecorder.resume();
-                isPaused = false;
-                document.getElementById('pauseResume').textContent = 'Pause';
-            } else {
-                mediaRecorder.pause();
-                isPaused = true;
-                document.getElementById('pauseResume').textContent = 'Resume';
-            }
-        });
-
-        document.getElementById('downloadVideo').addEventListener('click', () => {
-            const blob = new Blob(chunks, { type: 'video/webm' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'recorded_video.webm';
-            link.click();
         });
 
         // Start the stream when the page loads
