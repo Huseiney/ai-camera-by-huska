@@ -7,9 +7,8 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            background: linear-gradient(120deg, #4e54c8, #8f94fb);
             color: white;
-            text-align: center;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -23,64 +22,60 @@
             margin-bottom: 20px;
         }
 
-        .form-container {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        label {
-            font-size: 1.2rem;
-            margin: 10px 0;
-            display: block;
-        }
-
         select, button {
-            width: 100%;
-            padding: 10px;
             margin: 10px 0;
+            padding: 10px;
             font-size: 1rem;
-            border-radius: 5px;
             border: none;
-        }
-
-        select {
-            background: #4e54c8;
-            color: white;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 300px;
+            outline: none;
+            cursor: pointer;
         }
 
         button {
-            background: #ff5f6d;
+            background: #6a11cb;
             color: white;
-            cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.3s ease;
         }
 
         button:hover {
-            background: #ffc371;
+            background: #2575fc;
+        }
+
+        select {
+            background: white;
+            color: black;
         }
     </style>
 </head>
 <body>
-    <h1>AI Video Recorder - Setup</h1>
-    <div class="form-container">
-        <form id="optionsForm" action="camera.html" method="get">
-            <label for="duration">Recording Duration:</label>
-            <select id="duration" name="duration">
-                <option value="30">30 seconds</option>
-                <option value="60" selected>60 seconds</option>
-                <option value="120">120 seconds</option>
-            </select>
+    <h1>AI Video Recorder</h1>
+    <label for="duration">Select Recording Duration:</label>
+    <select id="duration">
+        <option value="30">30 seconds</option>
+        <option value="60" selected>60 seconds</option>
+        <option value="120">2 minutes</option>
+        <option value="180">3 minutes</option>
+    </select>
 
-            <label for="resolution">Resolution:</label>
-            <select id="resolution" name="resolution">
-                <option value="720">720p</option>
-                <option value="1080">1080p</option>
-            </select>
+    <label for="resolution">Select Video Resolution:</label>
+    <select id="resolution">
+        <option value="720" selected>720p (HD)</option>
+        <option value="1080">1080p (Full HD)</option>
+    </select>
 
-            <button type="submit">Start Recording</button>
-        </form>
-    </div>
+    <button id="startRecording">Start Recording</button>
+
+    <script>
+        document.getElementById('startRecording').addEventListener('click', () => {
+            const duration = document.getElementById('duration').value;
+            const resolution = document.getElementById('resolution').value;
+
+            // Redirect to camera.html with query parameters
+            window.location.href = `camera.html?duration=${duration}&resolution=${resolution}`;
+        });
+    </script>
 </body>
 </html>
